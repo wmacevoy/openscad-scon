@@ -28,15 +28,13 @@ function _scon_is_map(data) =
     is_list(data) &&
     _scon_all_seq(function(i) _scon_is_mapping(data[i]),0,len(data));
 
-scon_make = function(scon,base=undef)
+function scon_make(scon,base=undef)=
   is_undef(base) ?
     function(path,missing=undef)
       scon_value(scon,path,function (missing_path) missing)
   :
     function(path,missing=undef)
       scon_value(scon,path,function (missing_path) base(missing_path,missing));
-
-scon_unmake = function(made) [made([]),made()];
 
 function _scon_str_seq(seq,begin,end) = // str(seq(begin),...,seq(end-1))
   let (n = (begin < end) ? end - begin : 0,
@@ -58,16 +56,6 @@ function _scon_str_join_seq(seq,begin,end,sep=",") =
 function _scon_str_join_list(list,begin=0,_end=undef,sep=",") =
   let (seq = function (i) list[i],end = is_undef(_end) ? len(list) : _end)
   _scon_str_join_seq(seq,begin,end,sep);
-
-function _scon_idigit(number,radix,position) =
-  floor(number / pow(radix,position)) % radix;
-
-function _scon_sdigit(number,radix,position) =
-  let (digit = _scon_idigit(number,radix,position))
-  (digit < 10 ? chr(ord("0")+digit) : chr(ord("a")-10+digit));
-
-function _scon_hex(number,digits) = 
-  _scon_str_seq(function(i) _scon_sdigit(number,16,digits-1-i),0,digits);
   
 function _scon_json_chr(c) =
   (c == "\"") ? "\\\"" :
@@ -78,11 +66,8 @@ function _scon_json_chr(c) =
   (c == "\n") ? "\\n" :
   (c == "\r") ? "\\r" :
   (c == "\x09") ? "\\t" :
-  c; // assumes utf8 encoding of result
-//  (ord(c) >= 32 && ord(c) <= 127) ? c :
-//  (ord(c) < 65536) ? str("\\u",_scon_hex(ord(c),4)) :
-//  str("\\U",_scon_hex(ord(c),6));
-  
+  c;  
+
 function _scon_json_str(scon) =
   let (seq=function (i) _scon_json_chr(scon[i]))
   str("\"",_scon_str_seq(seq,0,len(scon)),"\"");
@@ -135,7 +120,7 @@ function _scon_digit(str,radix) =
   assert(false,str("\"",str,"\""," is not a valid radix hexadecimal digit"));
 
 function _scon_hex(str,begin,end) =
-  (end >= begin ) ? 0 : 
+  (end <= begin ) ? 0 : 
   let (v = pow(16,end-begin-1)*_scon_digit(str[begin],16))
   v + _scon_hex(str,begin+1,end);
 
@@ -151,11 +136,18 @@ function _scon_unescape(json,begin,end) =
   json[begin+1] == "u"  && end == begin + 6 ? chr(_scon_hex(json,begin+2,end)) :
   assert(false, str(_scon_substr(json,begin,end)," is not a valid json escape sequence"));
 
+function _scon_strpos(json,begin,end,ch) =
+  (begin >= end) ? end :
+  json[begin] == ch ? begin :
+  _scon_strpos(json,begin+1,end,ch);
+  
 function _scon_from_json_str(json,begin,end) =
-  let (sv = search("\\",json,1,begin), bs = len(sv) > 0 && sv[0] < end ? sv[0] : end)
+  let (bs=_scon_strpos(json,begin,end,"\\"))
   (bs >= end) ? _scon_substr(json,begin,end) :
   let (es = (json[bs+1] == "u") ? 6 : 2)
-  str(_scon_substr(json,begin,bs),_scon_unescape(json,bs,bs+es), _scon_from_json_str(bs+es,end));
+  str(_scon_substr(json,begin,bs),
+      _scon_unescape(json,bs,bs+es),
+      _scon_from_json_str(json,bs+es,end));
 
 function _scon_from_json_object(json,begin,end)=assert(false,"unsupported");
 function _scon_from_json_list(json,begin,end)=assert(false,"unsupported");

@@ -135,9 +135,10 @@ assert(scon_from_json("\"\\f\"") == "\x0c");
 assert(scon_from_json("\"\\n\"") == "\n");
 assert(scon_from_json("\"\\r\"") == "\r");
 assert(scon_from_json("\"\\t\"") == "\x09");
-assert(scon_from_json("\"\\ufead\"") == "\uFEAD");
+
+assert(scon_from_json("\"\\ufead\"") == "\ufead");
 
 assert(scon_from_json("\"test 1\\ntest 2\\r\"") == "test 1\ntest 2\r");
-assert(scon_from_json("\"test 1\\ttest 2\\r\"") == "hello\x09world\r");
+assert(scon_from_json("\"test 1\\ttest 2\\r\"") == "test 1\x09test 2\r");
 
 echo("control","test scon ok");
