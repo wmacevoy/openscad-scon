@@ -1,14 +1,14 @@
-function scon_value(data,path,default = function(path) undef,dist = 0) =
+function scon_value(scon,path,default = function(path) undef,dist = 0) =
   is_undef(path) ? default :
-  (len(path) <= dist || is_undef(data)) ?
-    (is_undef(data) ? default(path) : data) :
+  (len(path) <= dist || is_undef(scon)) ?
+    (is_undef(scon) ? default(path) : scon) :
     let (
       key = path[dist],
       next = is_undef(key) ?
-        data :
+        scon :
 	is_string(key) ?
-          _scon_map(data, key, path) :
-          _scon_index(data, key, path)
+          _scon_map(scon, key, path) :
+          _scon_index(scon, key, path)
     ) scon_value(next, path, default, dist + 1);
 
 function _scon_map(map, key, path) =
@@ -18,15 +18,15 @@ function _scon_map(map, key, path) =
 function _scon_index(list, index, path) =
     (is_list(list) && 0 <= index && index < len(list)) ? list[index] : undef;
 
-function _scon_is_mapping(data) =
-    is_list(data) && len(data) == 2 && is_string(data[0]);
+function _scon_is_mapping(scon) =
+    is_list(scon) && len(scon) == 2 && is_string(scon[0]);
 
 function _scon_all_seq(seq,begin,end) =
   begin >= end ? true : seq(begin) && _scon_all_seq(seq,begin+1,end);
 
-function _scon_is_map(data) =
-    is_list(data) &&
-    _scon_all_seq(function(i) _scon_is_mapping(data[i]),0,len(data));
+function _scon_is_map(scon) =
+    is_list(scon) &&
+    _scon_all_seq(function(i) _scon_is_mapping(scon[i]),0,len(scon));
 
 function scon_make(scon,base=undef)=
   is_undef(base) ?

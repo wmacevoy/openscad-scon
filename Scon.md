@@ -21,7 +21,7 @@ cfg_scon = [
 ];
 ```
 
-You can use these values via scon_value...
+You can use these values via scon_value, as in
 ```
 arms_left_length=scon_value(cfg_scon,["arms","left","length"]);
 eight=scon_value(cfg_scon,["sequence",2]);
