@@ -24,10 +24,10 @@ translate(sphere_center) sphere(sphere_radius,$fn=sphere_fn);
 
 ## Intro
 
-Scon is a data subset of OpenSCAD comparable to the JSON subset of Javascript.
-It is convenient configuration data subset for OpenSCAD.
+SCON is a data subset of OpenSCAD comparable to the JSON subset of Javascript.
+It is convenient configuration data subset for OpenSCAD.  SCON stands for SCON and can be spelled SCON, Scon or scon.
 
-## Scon value can be
+## A SCON value can be
 
 * A number, a string, a boolean, or undef.
 * A list of values.
@@ -60,13 +60,13 @@ cfg = scon_make(cfg_scon);
 
 arms_left_length=cfg(["arms","left","length"]);
 
-// you can supply a value value for missing parameters...
+// you can supply an optional replacement (default undef) for missing values...
 arms_left_radius=cfg(["arms","left","radius"],missing=1);
 ```
 
 # Make Make ...
 
-If there is a similarity, you can setup a basic configuration and only override and extend them, instead of repeating yourself.
+Basic configurations can be used to simplify describing similar structures:
 
 ```
 arm=scon_make([
@@ -115,7 +115,7 @@ arm_draw(right_arm);
 
 ## JSON
 
-Convert a scon value to a json string
+Since JSON is so universal, it is convenient to convert SCON to JSON:
 
 ``
 scon_to_json(true) == "true";
