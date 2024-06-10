@@ -1,7 +1,27 @@
-function scon_value(scon,path,default = function(path) undef,dist = 0) =
-  is_undef(path) ? default :
+//
+// Scon is a Json-like subset of openscad
+//
+//    Scon :== undef | boolean | number | string
+//           [ Scon, Scon, Scon, ... ] | // list in json
+//           [ [string,Scon], [String,Scon], ... ] // map in json
+//
+// scon_value allows for easy access to structured scon values via
+// a path and an optional computed missing value lambda function.
+//
+// Ex: scon_value([["x",1],["y",0]],["x"]) == 1
+//
+// An optional third parameter can provide a path-dependent missing
+// parameter function (which always produces undef by default).
+//
+// Ex:  scon_value([["x",1],["y",0]],["z"]) == undef
+// But: scon_value([["x",1],["y",0]],["z"],function(path) 0) == 0
+//
+// See scon_make to make a wrapper function that simplifies using scon_value.
+//
+function scon_value(scon,path,missing = function(path) undef,dist = 0) =
+  is_undef(path) ? missing :
   (len(path) <= dist || is_undef(scon)) ?
-    (is_undef(scon) ? default(path) : scon) :
+    (is_undef(scon) ? missing(path) : scon) :
     let (
       key = path[dist],
       next = is_undef(key) ?
@@ -9,14 +29,74 @@ function scon_value(scon,path,default = function(path) undef,dist = 0) =
 	is_string(key) ?
           _scon_map(scon, key, path) :
           _scon_index(scon, key, path)
-    ) scon_value(next, path, default, dist + 1);
+    ) scon_value(next, path, missing, dist + 1);
 
-function _scon_map(map, key, path) =
-    let (result = search([key], map,0)[0])
-      len(result) > 0 ? map[result[len(result)-1]][1] : undef;
+//
+// Make a scon wrapper to access scon data conveniently.
+//
+// Ex 1:
+//  def_cfg = scon_make([["x",0],["y",0],["fn":100]);
+//    def_cfg(["x"]) == 0;
+//    def_cfg(["y"]) == 0;
+//    def_cfg(["z"]) == undef;
+//    def_cfg(["fn"]) == 100;
+//
+// Make allows for an optional second parameter of a previously
+// made configuration as a fallback for missing values:
+//
+// Ex 2:
+//  cfg = scon_make([["x",10],["z",3]],def_cfg);
+//    cfg(["x"]) == 10
+//    cfg(["y"]) == 0 // falls back to def_cfg
+//    cfg(["z"]) == 3
+//    cfg(["t"]) == undef
+//    cfg(["t"],0) == 0 // cfg allows for missing value substitutions
+//
+//    
+function scon_make(scon,base=undef)=
+  is_undef(base) ?
+    function(path,missing=undef)
+      scon_value(scon,path,function (missing_path) missing)
+  :
+    function(path,missing=undef)
+      scon_value(scon,path,function (missing_path) base(missing_path,missing));
 
-function _scon_index(list, index, path) =
-    (is_list(list) && 0 <= index && index < len(list)) ? list[index] : undef;
+//
+// Convert a scon value to a json string
+//
+// Ex: scon_to_json(true) == "true"
+//     scon_to_json(17) == "17"
+//     scon_to_json("length") == "\"length\""
+//     scon_to_json([["x",1],["y",2]]) == "{\"x\":1,\"y\":2}"
+//     scon_to_json([2,3,5,8]) == "[2,3,5,8]"
+//
+//  List/object ambiguity! Since OpenSCAD has no native map, there must be an
+//  ambiguity in the conversion to the distinct [item[0],item[1],...] list
+//  and the {"name0":value0,"name1":value1,..} object notation in JSON.
+//
+//  The rule Scon uses is:
+//
+//    If every element of a Vector is a [string,value] pair, then it is converted
+//    to an object.  Otherwise it is a list.
+//
+//    So [], [["x",1],["y",2]], are maps and become "{}" and "{\"x\":1,\"y\":2}"
+//    any other Vector is converted to a list.
+//
+function scon_to_json(scon) =
+  is_undef(scon) ? "null" :
+  is_bool(scon) ? str(scon) :
+  is_num(scon) ? str(scon) :
+  is_string(scon) ? _scon_json_str(scon) :
+  _scon_is_map(scon) ? _scon_json_map(scon) :
+  is_list(scon) ? _scon_json_list(scon) :
+  _scon_json_str("??? ",scon," ???");
+
+function _scon_map(scon_map, key, path) =
+    let (result = search([key], scon_map,0)[0])
+      len(result) > 0 ? scon_map[result[len(result)-1]][1] : undef;
+
+function _scon_index(scon_list, index, path) =
+    (is_list(scon_list) && 0 <= index && index < len(scon_list)) ? scon_list[index] : undef;
 
 function _scon_is_mapping(scon) =
     is_list(scon) && len(scon) == 2 && is_string(scon[0]);
@@ -28,13 +108,6 @@ function _scon_is_map(scon) =
     is_list(scon) &&
     _scon_all_seq(function(i) _scon_is_mapping(scon[i]),0,len(scon));
 
-function scon_make(scon,base=undef)=
-  is_undef(base) ?
-    function(path,missing=undef)
-      scon_value(scon,path,function (missing_path) missing)
-  :
-    function(path,missing=undef)
-      scon_value(scon,path,function (missing_path) base(missing_path,missing));
 
 function _scon_str_seq(seq,begin,end) = // str(seq(begin),...,seq(end-1))
   let (n = (begin < end) ? end - begin : 0,
@@ -80,14 +153,6 @@ function _scon_json_list(scon) =
   let(seq=function(i) scon_to_json(scon[i]))
   str("[",_scon_str_join_seq(seq,0,len(scon)),"]");
 
-function scon_to_json(scon) =
-  is_undef(scon) ? "null" :
-  is_bool(scon) ? str(scon) :
-  is_num(scon) ? str(scon) :
-  is_string(scon) ? _scon_json_str(scon) :
-  _scon_is_map(scon) ? _scon_json_map(scon) :
-  is_list(scon) ? _scon_json_list(scon) :
-  _scon_json_str("??? ",scon," ???");
 
 // \x09 is tab in openscad string literals
 function _scon_space(str,pos=0)=len(search(str[pos]," \x09\n\r")) != 0;
@@ -152,6 +217,8 @@ function _scon_from_json_str(json,begin,end) =
 function _scon_from_json_object(json,begin,end)=assert(false,"unsupported");
 function _scon_from_json_list(json,begin,end)=assert(false,"unsupported");
 function _scon_from_json_num(json,begin,end)=assert(false,"unsupported");
+
+// incomplete feature - parse json to scon.
 function scon_from_json(json, __begin = undef, __end = undef) =
   let (_begin = is_undef(__begin) ? 0 : __begin,
        _end = is_undef(__end) ? len(json) : __end)

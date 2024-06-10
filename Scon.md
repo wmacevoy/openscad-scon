@@ -1,13 +1,37 @@
 # SCON - SCAD Object Notation (JSON for SCAD)
 
+## TL;DR
+
+```
+cfg_scon = [
+  ["fn",100],
+  ["sphere",[
+    ["radius",1],
+    ["center",[1,2,3]],
+  ]],
+];
+
+cfg=make(cfg_scon);
+
+fn = cfg(["fn"]);
+
+sphere_center = cfg(["sphere","center"]);
+sphere_radius = cfg(["sphere","radius"]);
+sphere_fn = cfg(["sphere","fn"],fn); // missing value replacement
+
+translate(sphere_center) sphere(sphere_radius,$fn=sphere_fn);
+```
+
+## Intro
+
 Scon is a data subset of OpenSCAD comparable to the JSON subset of Javascript.
 It is convenient configuration data subset for OpenSCAD.
 
 ## Scon value can be
 
 * A number, a string, a boolean, or undef.
-* A list of SCON values.
-* A map (list) of [string,SCON value] pairs.
+* A list of values.
+* A map, which is a list of [string,value] pairs.
 
 For example,
 ```
@@ -91,6 +115,26 @@ arm_draw(right_arm);
 
 ## JSON
 
-If you want to report some configuration information to other places, there is a an scon_to_json for that purpose.
+Convert a scon value to a json string
 
-Because OpenSCAD does not support the idea of a dictionary/map/key-value pair natively, there is 
+``
+scon_to_json(true) == "true";
+scon_to_json(17) == "17";
+scon_to_json("length") == "\"length\"";
+scon_to_json([["x",1],["y",2]]) == "{\"x\":1,\"y\":2}";
+scon_to_json([]) == "{}";
+scon_to_json([2,3,5,8]) == "[2,3,5,8]";
+```
+
+### List/object ambiguity
+
+Since OpenSCAD has no native map, there must be an ambiguity in the conversion to the
+distinct [item[0],item[1],...] list and the {"name0":value0,"name1":value1,..} object
+notation in JSON.
+
+The rule Scon uses is:
+```
+If every element of a list is a [string,value] pair, then it is converted
+to a {"name":value,...} object.  Otherwise it is a [item,...] list.
+```
+In particular, an empty list is always converted to an object.
