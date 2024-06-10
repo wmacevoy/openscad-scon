@@ -1,8 +1,12 @@
-# SCON - SCAD Object Notation (JSON for SCAD)
+# SCON
 
-## TL;DR
+JSON for OpenSCAD
+
+## TL;DR.
 
 ```
+include <Scon.scad>
+
 cfg_scon = [
   ["fn",100],
   ["sphere",[
@@ -11,7 +15,7 @@ cfg_scon = [
   ]],
 ];
 
-cfg=make(cfg_scon);
+cfg=scon_make(cfg_scon);
 
 fn = cfg(["fn"]);
 
@@ -22,12 +26,11 @@ sphere_fn = cfg(["sphere","fn"],fn); // missing value replacement
 translate(sphere_center) sphere(sphere_radius,$fn=sphere_fn);
 ```
 
-## Intro
+## Introduction
 
-SCON is a data subset of OpenSCAD comparable to the JSON subset of Javascript.
-It is convenient configuration data subset for OpenSCAD.  SCON stands for SCON and can be spelled SCON, Scon or scon.
+SCON is a convenient configuration data subset for OpenSCAD similar to JSON for Javascript.
 
-## A SCON value can be
+A SCON value can be
 
 * A number, a string, a boolean, or undef.
 * A list of values.
@@ -54,7 +57,7 @@ arms_cfg=scon_value(cfg_scon,["arms"]);
 
 ## Make
 
-Better, you can wrap scon_value in a function so you don't have to write as much to look up a value:
+Better, you can wrap scon_value in a function so you don't have to write as much to use:
 ```
 cfg = scon_make(cfg_scon);
 
@@ -66,47 +69,39 @@ arms_left_radius=cfg(["arms","left","radius"],missing=1);
 
 # Make Make ...
 
-Basic configurations can be used to simplify describing similar structures:
+Base configurations can be used to simplify describing similar structures, you have to
+describe how they new configurations differ from the base configuration:
 
 ```
+// arm is the base configuration
 arm=scon_make([
   ["state","down"],
   ["length",10],
   ["radius",1],
 ]);
 
+// left_arm is an arm, but with some changes & additions
 left_arm=scon_make([
   ["state","up"],
 ],arm);
 
+// right_arm is an arm, but with some changes & additions
 right_arm=scon_make([
-  ["tool",...],
+  ["length",8],
+  ["tool",true],
 ],arm);
 ```
-Both left and right arms will have the length of an arm, the left will be in the up state, and the right arm will have tool properties.  You can nest this idea as much as you find helpful.
+Both left and right arms will have the radius of 1, the left will be in the up state, and
+the right arm will have a tool.  You can nest this idea as much as you find helpful.
 
 ## Me
 
 Once you have a property function from make, then you can make pretty clean modules, like
 
 ```
-arm=scon_make([
-  ["state","down"],
-  ["length",10],
-  ["radius",1],
-]);
-
-left_arm=scon_make([
-  ["state","up"],
-],arm);
-
-right_arm=scon_make([
-  ["tool",...],
-],arm);
-
 module arm_draw(me) {
-  let (length=me(["length"],1), color=me(["color"])) {
-    // generate arm of length and color, etc...
+  let (length=me(["length"]), radius=me(["radius"]), tool=me(["tool"],false)) {
+    // generate arm of length and radius, etc...
   }
 }
 arm_draw(left_arm);
