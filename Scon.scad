@@ -149,9 +149,42 @@ function _scon_from_json_str(json,begin,end) =
       _scon_unescape(json,bs,bs+es),
       _scon_from_json_str(json,bs+es,end));
 
+function _scon_json_unsigned_decimal(json,begin,end,k=0,v=0)=
+  (end <= begin) ? assert(false,str("invalid unsigned decimal ",_scon_substr(json,begin,end))) :
+  let (d=_scon_digit(json[begin],10))
+
+function _scon_json_decimals(json,begin,end)=
+  !(ord("0") <= ord(json[begin]) && ord(json[begin] <= ord("9")) ? 0 :
+  1 + _scon_json_decimals(json,begin+1,end);
+
+function _scon_decimal(str,begin,end) =
+  (end <= begin ) ? 0 : 
+  let (v = pow(10,end-begin-1)*_scon_digit(str[begin],10))
+  v + _scon_decimal(str,begin+1,end);
+
+function _scon_json_unsigned_decimal(json,begin,_end)=
+  let (end = _scon_json_decimals(json,begin,_end))
+  assert(begin < end,str("invalid unsigned decimal ",_scon_substr(json,begin,end))) &&
+  [end,sign,_scon_decimal(json,begin,end)];
+
+function _scon_json_signed_decimal(json,_begin,_end)=
+  let (sign = (_begin < _end) && json[_begin] == '-' ? -1 : 1,
+       begin = (_begin < _end) && (json[_begin] == '+' || json[_begin] == '-') ? _begin + 1 : _begin,
+       end = _scon_json_decimals(json,begin,_end))
+  assert(begin < end,str("invalid signed decimal ",_scon_substr(json,_begin,_end))) &&
+  [end,sign,_scon_decimal(json,begin,end)];
+      
+       
+
+function _scon_from_json_num(json,begin,end)=
+  let (esv0 = _scon_json_signed_decimal(json,begin,end),
+       
+  (end > begin && json[begin] == '-') ? -
+  assert(false,"unsupported");
+
 function _scon_from_json_object(json,begin,end)=assert(false,"unsupported");
-function _scon_from_json_list(json,begin,end)=assert(false,"unsupported");
-function _scon_from_json_num(json,begin,end)=assert(false,"unsupported");
+function _scon_from_json_list(json,begin,end)=
+assert(false,"unsupported");
 function scon_from_json(json, __begin = undef, __end = undef) =
   let (_begin = is_undef(__begin) ? 0 : __begin,
        _end = is_undef(__end) ? len(json) : __end)
