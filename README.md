@@ -117,14 +117,12 @@ arm_draw(right_arm);
 
 Since JSON is so universal, it is convenient to convert SCON to JSON:
 
-``
-scon_to_json(true) == "true";
-scon_to_json(17) == "17";
-scon_to_json("length") == "\"length\"";
-scon_to_json([["x",1],["y",2]]) == "{\"x\":1,\"y\":2}";
-scon_to_json([]) == "{}";
-scon_to_json([2,3,5,8]) == "[2,3,5,8]";
-```
+ * `scon_to_json(true) == "true"`
+ * `scon_to_json(17) == "17"`
+ * `scon_to_json("length") == "\"length\""`
+ * `scon_to_json([["x",1],["y",2]]) == "{\"x\":1,\"y\":2}"`
+ * `scon_to_json([]) == "{}"`
+ * `scon_to_json([2,3,5,8]) == "[2,3,5,8]"`
 
 ### List/object ambiguity
 
