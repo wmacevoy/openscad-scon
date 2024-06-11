@@ -1,32 +1,15 @@
-function scon_value(data,path,default = function(path) undef,dist = 0) =
-  is_undef(path) ? default :
-  (len(path) <= dist || is_undef(data)) ?
-    (is_undef(data) ? default(path) : data) :
+function scon_value(scon,path,missing = function(path) undef,dist = 0) =
+  is_undef(path) ? missing :
+  (len(path) <= dist || is_undef(scon)) ?
+    (is_undef(scon) ? missing(path) : scon) :
     let (
       key = path[dist],
       next = is_undef(key) ?
-        data :
+        scon :
 	is_string(key) ?
-          _scon_map(data, key, path) :
-          _scon_index(data, key, path)
-    ) scon_value(next, path, default, dist + 1);
-
-function _scon_map(map, key, path) =
-    let (result = search([key], map,0)[0])
-      len(result) > 0 ? map[result[len(result)-1]][1] : undef;
-
-function _scon_index(list, index, path) =
-    (is_list(list) && 0 <= index && index < len(list)) ? list[index] : undef;
-
-function _scon_is_mapping(data) =
-    is_list(data) && len(data) == 2 && is_string(data[0]);
-
-function _scon_all_seq(seq,begin,end) =
-  begin >= end ? true : seq(begin) && _scon_all_seq(seq,begin+1,end);
-
-function _scon_is_map(data) =
-    is_list(data) &&
-    _scon_all_seq(function(i) _scon_is_mapping(data[i]),0,len(data));
+          _scon_map(scon, key, path) :
+          _scon_index(scon, key, path)
+    ) scon_value(next, path, missing, dist + 1);
 
 function scon_make(scon,base=undef)=
   is_undef(base) ?
@@ -35,6 +18,61 @@ function scon_make(scon,base=undef)=
   :
     function(path,missing=undef)
       scon_value(scon,path,function (missing_path) base(missing_path,missing));
+
+function scon_to_json(scon) =
+  is_undef(scon) ? "null" :
+  is_bool(scon) ? str(scon) :
+  is_num(scon) ? str(scon) :
+  is_string(scon) ? _scon_json_str(scon) :
+  _scon_is_map(scon) ? _scon_json_map(scon) :
+  is_list(scon) ? _scon_json_list(scon) :
+  _scon_json_str("??? ",scon," ???");
+
+function scon_from_json(json, __begin = undef, __end = undef) =
+  let (_begin = is_undef(__begin) ? 0 : __begin,
+       _end = is_undef(__end) ? len(json) : __end)
+  let (begin = _scon_ltrim(json,_begin,_end),
+       end = _scon_rtrim(json,begin,_end))
+  let ([scon,___begin] = _scon_from_json(json,begin,end))
+  assert(___begin == end,str("invalid text after json ",_scon_substr(json,___begin,end));
+
+function _scon_from_json(json, begin, end) =
+  let (json_object = _scon_from_json_object(json,begin,end)) !is_undef(json_object) ? json_object :
+  let (json_list = _scon_from_json_list(json,begin,end)) !is_undef(json_list) ? json_list : 
+  let (json_null = _scon_from_json_word(json,begin,end,"null")) !is_undef(json_null) ? json_null :
+  let (json_true = _scon_from_json_word(json,begin,end,"true")) !is_undef(json_true) ? json_true :
+  let (json_false = _scon_from_json_word(json,begin,end,"false")) !is_undef(json_false) ? json_false :
+  let (json_string = _scon_from_json_string(json,begin,end)) !is_undef(json_string) ? json_string :
+  let (json_number = _scon_from_json_number(json,begin,end)) !is_undef(json_number) ? json_number :
+  [undef,begin];
+
+function _scon_from_json_word(json,begin,end,word,value) = 
+  (end >= begin+len(word)) && _json_substreq(json,begin,begin+len(word),word) ? [value,begin+len(word] : undef;
+
+  _scon_substreq(json,begin,end,"true") ? true :
+  _scon_substreq(json,begin,end,"false") ? false :
+  (json[begin] == "{" && json[end-1] == "}") ? _scon_from_json_object(json,begin+1,end-1) :
+  (json[begin] == "[" && json[end-1] == "]") ? _scon_from_json_list(json,begin+1,end-1) :
+  (json[begin] == "\"" && end-begin >= 2 && json[end-1] == "\"") ? _scon_from_json_str(json,begin+1,end-1) :
+  _scon_from_json_num(json,begin,end);
+
+
+function _scon_map(scon_map, key, path) =
+    let (result = search([key], scon_map,0)[0])
+      len(result) > 0 ? scon_map[result[len(result)-1]][1] : undef;
+
+function _scon_index(scon_list, index, path) =
+    (is_list(scon_list) && 0 <= index && index < len(scon_list)) ? scon_list[index] : undef;
+
+function _scon_is_mapping(scon) =
+    is_list(scon) && len(scon) == 2 && is_string(scon[0]);
+
+function _scon_all_seq(seq,begin,end) =
+  begin >= end ? true : seq(begin) && _scon_all_seq(seq,begin+1,end);
+
+function _scon_is_map(scon) =
+    is_list(scon) &&
+    _scon_all_seq(function(i) _scon_is_mapping(scon[i]),0,len(scon));
 
 function _scon_str_seq(seq,begin,end) = // str(seq(begin),...,seq(end-1))
   let (n = (begin < end) ? end - begin : 0,
@@ -79,15 +117,6 @@ function _scon_json_map(scon) =
 function _scon_json_list(scon) =
   let(seq=function(i) scon_to_json(scon[i]))
   str("[",_scon_str_join_seq(seq,0,len(scon)),"]");
-
-function scon_to_json(scon) =
-  is_undef(scon) ? "null" :
-  is_bool(scon) ? str(scon) :
-  is_num(scon) ? str(scon) :
-  is_string(scon) ? _scon_json_str(scon) :
-  _scon_is_map(scon) ? _scon_json_map(scon) :
-  is_list(scon) ? _scon_json_list(scon) :
-  _scon_json_str("??? ",scon," ???");
 
 // \x09 is tab in openscad string literals
 function _scon_space(str,pos=0)=len(search(str[pos]," \x09\n\r")) != 0;
@@ -185,16 +214,3 @@ function _scon_from_json_num(json,begin,end)=
 function _scon_from_json_object(json,begin,end)=assert(false,"unsupported");
 function _scon_from_json_list(json,begin,end)=
 assert(false,"unsupported");
-function scon_from_json(json, __begin = undef, __end = undef) =
-  let (_begin = is_undef(__begin) ? 0 : __begin,
-       _end = is_undef(__end) ? len(json) : __end)
-  let (begin = _scon_ltrim(json,_begin,_end),
-       end = _scon_rtrim(json,begin,_end))
-  (begin >= end) ? assert(false, "the empty string is not valid json") :
-  _scon_substreq(json,begin,end,"null") ? undef :
-  _scon_substreq(json,begin,end,"true") ? true :
-  _scon_substreq(json,begin,end,"false") ? false :
-  (json[begin] == "{" && json[end-1] == "}") ? _scon_from_json_object(json,begin+1,end-1) :
-  (json[begin] == "[" && json[end-1] == "]") ? _scon_from_json_list(json,begin+1,end-1) :
-  (json[begin] == "\"" && end-begin >= 2 && json[end-1] == "\"") ? _scon_from_json_str(json,begin+1,end-1) :
-  _scon_from_json_num(json,begin,end);
