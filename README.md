@@ -108,7 +108,7 @@ arm_draw(left_arm);
 arm_draw(right_arm);
 ```
 
-## JSON
+## SCON→JSON
 
 Since JSON is so universal, it is convenient to convert SCON to JSON:
 
@@ -131,3 +131,12 @@ If every element of a list is a [string,value] pair, then it is converted
 to a {"name":value,...} object.  Otherwise it is a [item,...] list.
 ```
 In particular, an empty list is always converted to an object.
+
+
+## JSON→SCON
+
+`json2scon.py` is a python 3.7 script to convert to json to scon.
+Basic usage is
+```
+python3 json2scon.py < input.json > output.scon
+```
