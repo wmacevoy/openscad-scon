@@ -49,13 +49,30 @@ function _scon_from_json(json, begin, end) =
 function _scon_from_json_word(json,begin,end,word,value) = 
   (end >= begin+len(word)) && _json_substreq(json,begin,begin+len(word),word) ? [value,begin+len(word] : undef;
 
-  _scon_substreq(json,begin,end,"true") ? true :
-  _scon_substreq(json,begin,end,"false") ? false :
-  (json[begin] == "{" && json[end-1] == "}") ? _scon_from_json_object(json,begin+1,end-1) :
-  (json[begin] == "[" && json[end-1] == "]") ? _scon_from_json_list(json,begin+1,end-1) :
-  (json[begin] == "\"" && end-begin >= 2 && json[end-1] == "\"") ? _scon_from_json_str(json,begin+1,end-1) :
-  _scon_from_json_num(json,begin,end);
+function _scon_from_json_object(json,begin,end) =
+  (end <= begin + 2 || json[begin] != "{") ? undef : assert(false, "unsupported");
 
+function _scon_from_json_list(json,begin,end) =
+  (end <= begin + 2 || json[begin] != "[") ? undef : assert(false, "unsupported");
+
+function _scon_from_json_string(json,begin,end) =
+  (end <= begin + 2 || json[begin] != "\"") ? undef : assert(false, "unsupported");
+
+// only signed decimal numbers
+function _scon_from_json_number(json,_begin,end) =
+  let (
+    sign = (end - _begin >= 2 && json[_begin] == "-") ? -1 : 1;
+    begin = (sign == -1) ? _begin + 1 : begin
+  )
+  (end <= begin + 1) ? undef :
+  let (c = ord(json[begin])-ord("0"))
+  !(c >= 0 && c <= 9) ? undef :
+  _scon_from_json_unsigned_number(sign,json,begin,end);
+
+function _scon_from_json_unsigned_number(sign,json,begin,end,v=0) =
+  let (c = begin < end ? ord(json[begin])-ord("0") : -1)
+  !(c >= 0 && c <= 9) ? [sign*v,begin] :
+  _scon_from_json_unsigned_number(sign,json,begin+1,end,10*v+c);
 
 function _scon_map(scon_map, key, path) =
     let (result = search([key], scon_map,0)[0])
