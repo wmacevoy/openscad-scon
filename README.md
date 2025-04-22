@@ -186,8 +186,3 @@ include <cfg.scad>;
 stick_nz = cfg(["stick","nz"]);
 ...
 ```
-
-## QuickJS instead of Python
-
-If you would rather have a small dependency footprint, you can use quickjs (I use the cosmopolitan cross-platform execuable) at https://bellard.org/quickjs/ with 
-
