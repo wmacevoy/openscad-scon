@@ -1,3 +1,4 @@
+#!/usr/bin/env qjs
 import * as std from 'std';
 
 // ——— SCON‑escaping functions ———
