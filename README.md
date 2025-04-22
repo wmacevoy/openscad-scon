@@ -166,7 +166,7 @@ JSON is common configuration format.  Here is a nice pattern to take for a proje
 }
 ```
 
-2. Use python `python3 json2scon.py <cfg.json >cfg.scon` or QuickJS `qjs json2scon.qjs <cfg.json >cfg.scon` to translate JSON to SCON format.  You should not change `cfg.scon` except by automatically re-generating it probably in a build script along with the rest of your build tool chain.
+2. Use python `python3 json2scon.py <cfg.json >cfg.scon` or [QuickJS](https://bellard.org/quickjs/) `qjs json2scon.qjs <cfg.json >cfg.scon` to translate JSON to SCON format.  You should not change `cfg.scon` except by automatically re-generating it probably in a build script along with the rest of your build tool chain.
 ```
 [["fiddlestick", [["nz", 360], ["ntheta", 360], ...
 ```
