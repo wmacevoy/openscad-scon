@@ -134,55 +134,17 @@ In particular, an empty list is always converted to an object.
 
 ## JSON→SCON
 
-`json2scon.py` is a python 3.7 script to convert to json to scon.
-Basic usage is
-```
-python3 json2scon.py < input.json > output.scon
-```
+* Python: `python3 json2scon.py <cfg.json >cfg.scon`
+* [QuickJS](https://bellard.org/quickjs/) `qjs json2scon.qjs <cfg.json >cfg.scon`
+* [Cosmopolitan](https://github.com/jart/cosmopolitan/tree/master)  `./json2scon.exe <cfg.json >cfg.scon`
 
 You can add a `--fmt='cfg=scon_make({scon});` or similar pattern if you want more than the raw scon in the output.
 
-## cfg.json root configuration pattern
-
-JSON is common configuration format.  Here is a nice pattern to take for a project where your tools incluide other languages so there is a single root document
-
-1. Create a JSON configuration document for example (cfg.json):
-```json
-{
-    "stick" : {
-        "nz" : 360,
-        "ntheta" : 360,
-        "height" : 180.0,
-        "radius" : 6.0,
-        "innerDiameter" : 4.0,
-        "starEnd" : true
-    },
-    "hole" : {
-        "nz" : 360,
-        "ntheta" : 360,
-        "radius" : 1,
-        "height" : 2
-    }
-}
-```
-
-2. Use python `python3 json2scon.py <cfg.json >cfg.scon` or [QuickJS](https://bellard.org/quickjs/) `qjs json2scon.qjs <cfg.json >cfg.scon` to translate JSON to SCON format.  You should not change `cfg.scon` except by automatically re-generating it probably in a build script along with the rest of your build tool chain.
-```
-[["fiddlestick", [["nz", 360], ["ntheta", 360], ...
-```
-
-3. Make a simple config file that reads the file (cfg.scad).
+If you have this as a common config file (cfg.scad):
 ```
 include <Scon.scad>;
 cfg_scon=include <cfg.scon>;
 cfg=scon_make(cfg_scon);
-// print current configuration
 echo(scon_to_json(cfg_scon));
 ```
-
-4. Now, in your scad files you can include this file (stick.scad). This way you are not copying values into different places.  This is a big win.
-```
-include <cfg.scad>;
-stick_nz = cfg(["stick","nz"]);
-...
-```
+Then all your parts files and build scripts can have access to the same configuration.
