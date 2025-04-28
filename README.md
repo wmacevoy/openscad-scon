@@ -135,8 +135,8 @@ In particular, an empty list is always converted to an object.
 ## JSON→SCON
 
 * Python: `python3 json2scon.py <cfg.json >cfg.scon`
-* [QuickJS](https://bellard.org/quickjs/) `qjs json2scon.qjs <cfg.json >cfg.scon`
-* [Cosmopolitan](https://github.com/jart/cosmopolitan/tree/master)  `./json2scon.exe <cfg.json >cfg.scon`
+* Node: `node json2scon.js <cfg.json >cfg.scon`
+* [QuickJS](https://bellard.org/quickjs/) `qjs --std -m json2scon.js <cfg.json >cfg.scon`
 
 You can add a `--fmt='cfg=scon_make({scon});` or similar pattern if you want more than the raw scon in the output.
 
@@ -148,3 +148,4 @@ cfg=scon_make(cfg_scon);
 echo(scon_to_json(cfg_scon));
 ```
 Then all your parts files and build scripts can have access to the same configuration.
+
