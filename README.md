@@ -5,7 +5,7 @@ JSON for OpenSCAD
 ## TL;DR.
 
 ```
-include <Scon.scad>
+include <scon.scad>
 
 cfg_scon = [
   ["fn",100],
