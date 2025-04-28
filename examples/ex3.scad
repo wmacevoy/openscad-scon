@@ -1,4 +1,4 @@
-include <Scon.scad>
+include <scon.scad>
 
 // base configuration values for shapes
 shape = scon_make([

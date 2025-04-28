@@ -1,4 +1,4 @@
-include <Scon.scad>
+include <scon.scad>
 
 assert(_scon_all_seq(function (i) false,0,0) == true );
 assert(_scon_all_seq(function (i) true ,0,3) == true );

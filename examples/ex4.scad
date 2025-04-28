@@ -1,36 +1,26 @@
-include <Scon.scad>
+include <scon.scad>
 
 //
-//     shape---------------
-//    /     \              \
-//   cube    sphere         shapes
-//  /       /      \              \
-// cube1   sphere1  sphere2        all(sphere1,sphere2,cube1)
+//     shape
+//    /     \
+//   cube    sphere
+//  /       /      \
+// cube1   sphere1  sphere2
 //
 
 // base configuration values for shapes
 shape = scon_make([
   ["kind",undef],
   ["center",[0,0,0]],
-  ["color","children"],
+  ["color",[1,1,0]],
   ["fn", 100],
 ]);
 
 shape_make = function(scon) scon_make(scon,shape);
 
-module shape_color(me) {
-  let (me_color=me(["color"])) {
-    if (is_undef(me_color) || me_color == "children") {
-      children();
-    } else {
-      color(me_color) children();
-    }
-  }
-}
-
 module shape_draw(me) {
-  let (me_center=me(["center"])) {
-    shape_color(me) translate(me_center) children();
+  let (me_center=me(["center"]), me_color=me(["color"])) {
+    color(me_color) translate(me_center) children();
   }
 }
 
@@ -58,24 +48,6 @@ cube_make = function(scon) scon_make(scon,cube);
 module cube_draw(me) {
   let(me_size = me(["size"]), me_fn = me(["fn"])) {
     shape_draw(me) { cube(size=me_size, center = true); }
-  }
-}
-
-shapes = shape_make([
- ["kind","shapes"],
- ["color","children"],
- ["children",[]],
-],shape);
-
-shapes_make = function(scon) scon_make(scon,shapes);
-
-module shapes_draw(me) {
-  let(me_children = me(["children"])) {
-    shape_draw(me) {
-      for (child = me_children) {
-        draw(child);
-      }
-    }
   }
 }
 
@@ -108,9 +80,7 @@ cube1 = cube_make([
   ["color",[0,0,1]],
 ]);
 
-all = shapes_make([
-  ["children",[sphere1,sphere2,cube1]],
-]);
-
-draw(all);
+for (shape = [sphere1,sphere2,cube1]) {
+  draw(shape);
+}
 

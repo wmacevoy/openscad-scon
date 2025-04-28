@@ -134,15 +134,15 @@ In particular, an empty list is always converted to an object.
 
 ## JSON→SCON
 
-* Python: `python3 json2scon.py <cfg.json >cfg.scon`
-* Node: `node json2scon.js <cfg.json >cfg.scon`
-* [QuickJS](https://bellard.org/quickjs/) `qjs --std -m json2scon.js <cfg.json >cfg.scon`
+* Python: `python3 scon_from_json.py <cfg.json >cfg.scon`
+* Node: `node scon_from_json.js <cfg.json >cfg.scon`
+* [QuickJS](https://bellard.org/quickjs/) `qjs --std -m scon_from_json.js <cfg.json >cfg.scon`
 
 You can add a `--fmt='cfg=scon_make({scon});` or similar pattern if you want more than the raw scon in the output.
 
 If you have this as a common config file (cfg.scad):
 ```
-include <Scon.scad>;
+include <scon.scad>;
 cfg_scon=include <cfg.scon>;
 cfg=scon_make(cfg_scon);
 echo(scon_to_json(cfg_scon));
@@ -161,7 +161,7 @@ OpenSCAD has built-in support of JSON in the developer build without the composa
 and exportability of SCON.  If JSON is a supported feature of your OpenSCAD, then you
 can convert JSON to SCON with
 ```
-include <Scon.scad>;
+include <scon.scad>;
 cfg_json=import("cfg.json");
 cfg_scon=scon_from_json(cfg_json);
 cfg=scon_make(cfg_scon);
