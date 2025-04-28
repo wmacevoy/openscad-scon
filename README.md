@@ -150,6 +150,7 @@ echo(scon_to_json(cfg_scon));
 or, briefly
 ```
 cfg=scon_make(include <cfg.scon>);
+echo(scon_to_json(cfg([])));
 ```
 
 Then all your parts files and build scripts can have access to the same configuration.
@@ -168,7 +169,9 @@ echo(scon_to_json(cfg_scon));
 ```
 or, briefly
 ```
+// only if your OpenSCAD supports direct JSON import
 cfg=scon_make(scon_from_json(import("cfg.json")));
+echo(scon_to_json(cfg([])));
 ```
 
 
