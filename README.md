@@ -147,5 +147,29 @@ cfg_scon=include <cfg.scon>;
 cfg=scon_make(cfg_scon);
 echo(scon_to_json(cfg_scon));
 ```
+or, briefly
+```
+cfg=scon_make(include <cfg.scon>);
+```
+
 Then all your parts files and build scripts can have access to the same configuration.
+
+## JSON→SCON (Developer Build of OpenSCAD)
+
+OpenSCAD has built-in support of JSON in the developer build without the composability
+and exportability of SCON.  If JSON is a supported feature of your OpenSCAD, then you
+can convert JSON to SCON with
+```
+include <Scon.scad>;
+cfg_json=import("cfg.json");
+cfg_scon=scon_from_json(cfg_json);
+cfg=scon_make(cfg_scon);
+echo(scon_to_json(cfg_scon));
+```
+or, briefly
+```
+cfg=scon_make(scon_from_json(import("cfg.json")));
+```
+
+
 
