@@ -174,5 +174,8 @@ cfg=scon_make(scon_from_json(import("cfg.json")));
 echo(scon_to_json(cfg([])));
 ```
 
-
-
+# Test
+If an object (cube) is created, then all the tests pass
+```
+openscad -o pass.stl tests/scon_test.scad
+```

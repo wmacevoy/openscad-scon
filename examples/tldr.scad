@@ -1,4 +1,4 @@
-include <scon.scad>
+include <../scon.scad>
 
 cfg_scon = [
   ["fn",100],

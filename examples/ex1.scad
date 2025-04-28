@@ -1,4 +1,4 @@
-include <scon.scad>
+include <../scon.scad>
 
 cfg_scon = [["fn", 100],["radius",10],["center",[1,2,3]]];
 

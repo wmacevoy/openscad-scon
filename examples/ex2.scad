@@ -1,4 +1,4 @@
-include <scon.scad>
+include <../scon.scad>
 
 sphere_scon = [
   ["radius",1],
