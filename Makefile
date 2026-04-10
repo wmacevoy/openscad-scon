@@ -1,2 +1,2 @@
-tests/test_scon.stl : tests/test_scon.scad scon.scad
-	$(OPENSCAD) -o tests/test_scon.stl tests/test_scon.scad
+tests/scon_test.stl : tests/scon_test.scad scon.scad
+	$(OPENSCAD) -o tests/scon_test.stl tests/scon_test.scad

@@ -61,28 +61,28 @@ function scon_to_json(scon) =
   is_string(scon) ? _scon_json_str(scon) :
   _scon_is_map(scon) ? _scon_json_map(scon) :
   is_list(scon) ? _scon_json_list(scon) :
-  _scon_json_str("??? ",scon," ???");
+  _scon_json_str(str("??? ",scon," ???"));
 
 //
 // Development builds of OpenSCAD with the import-function feature enabled
 // can import Json directly.  To convert this import to SCON, you can use this
 // function.
 //
-// The json2scon.js and json2scon.py scripts create a back-portable way to
-// do this by externally converting to 
-// 
+// The scon_from_json.js and scon_from_json.py scripts create a back-portable way to
+// do this by externally converting to
+//
 // Developer Build usage:
 //
-//   cfg = scon_make(json_to_scon(import("config.json")));
+//   cfg = scon_make(scon_from_json(import("config.json")));
 //
 // Portable usage:
 //
 //   # from terminal or build script
-//   python3 json2scon.py <config.json >config.scon
+//   python3 scon_from_json.py <config.json >config.scon
 //   # or
-//   node json2scon.js <config.json >config.scon
+//   node scon_from_json.js <config.json >config.scon
 //   # or (quickjs)
-//   qjs --std -m json2scon.js <config.json >config.scon
+//   qjs --std -m scon_from_json.js <config.json >config.scon
 //
 //   # in OpenSCAD
 //   cfg = scon_make(include "config.scon");
@@ -105,7 +105,10 @@ function _scon_is_mapping(scon) =
     is_list(scon) && len(scon) == 2 && is_string(scon[0]);
 
 function _scon_all_seq(seq,begin,end) =
-  begin >= end ? true : seq(begin) && _scon_all_seq(seq,begin+1,end);
+  let (n = (begin < end) ? end - begin : 0,
+       m = ((n % 2) == 0) ? n/2 : (n-1) / 2)
+  n > 1 ? (_scon_all_seq(seq,begin,begin+m) && _scon_all_seq(seq,begin+m,end)) :
+  n == 1 ? seq(begin) : true;
 
 function _scon_is_map(scon) =
     is_list(scon) &&

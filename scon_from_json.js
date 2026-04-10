@@ -78,7 +78,7 @@ async function main() {
   for (let i = 1; i<argc(); ++i) {
     const a = argv(i);
     if (a.startsWith('--fmt=')) fmt = a.slice(6);
-    else if (a === '--fmt' && args[i + 1]) fmt = args[++i];
+    else if (a === '--fmt' && i + 1 < argc()) fmt = argv(++i);
     else {
       console.log("invalid argument");
       exit(1);
@@ -96,7 +96,7 @@ async function main() {
   }
 }
 
-if (argc() > 1 && argv(0).endsWith("json2scon.js")) {
+if (argc() >= 1 && argv(0).endsWith("scon_from_json.js")) {
   await main();
 }
 

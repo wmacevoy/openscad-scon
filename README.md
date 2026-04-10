@@ -136,9 +136,10 @@ In particular, an empty list is always converted to an object.
 
 * Python: `python3 scon_from_json.py <cfg.json >cfg.scon`
 * Node: `node scon_from_json.js <cfg.json >cfg.scon`
-* [QuickJS](https://bellard.org/quickjs/) `qjs --std -m scon_from_json.js <cfg.json >cfg.scon`
+* Bun: `bun scon_from_json.js <cfg.json >cfg.scon`
+* [QuickJS](https://bellard.org/quickjs/): `qjs --std -m scon_from_json.js <cfg.json >cfg.scon`
 
-You can add a `--fmt='cfg=scon_make({scon});` or similar pattern if you want more than the raw scon in the output.
+You can add a `--fmt='cfg=scon_make({scon});'` or similar pattern if you want more than the raw scon in the output.
 
 If you have this as a common config file (cfg.scad):
 ```

@@ -8,6 +8,9 @@ assert(_scon_all_seq(function (i) i != 1,0,3) == false);
 assert(_scon_all_seq(function (i) i != 2,0,3) == false);
 
 assert(_scon_all_seq(function (i) i != 0,0,10) == false);
+assert(_scon_all_seq(function (i) true,0,100) == true);
+assert(_scon_all_seq(function (i) i != 99,0,100) == false);
+assert(_scon_all_seq(function (i) i != 50,0,100) == false);
 
 assert(_scon_is_map("hi") == false);
 assert(_scon_is_map(3.14) == false);
@@ -16,7 +19,10 @@ assert(_scon_is_map([1,2,3]) == false);
 assert(_scon_is_map([]) == true);
 assert(_scon_is_map([["a",1]]) == true);
 assert(_scon_is_map([["a",1],["b",1]]) == true);
-spath=function(path) str_join_list(path,0,len(path),sep="/");
+spath=function(path) _scon_str_join_list(path,0,len(path),sep="/");
+assert(spath(["a","b","c"]) == "a/b/c");
+assert(spath(["x"]) == "x");
+assert(spath([]) == "");
 
 assert(_scon_map([["alpha",1],["beta",2]],"alpha",["dir","subdir"]) == 1);
 assert(_scon_map([["alpha",1],["beta",2]],"c",["a","b"]) == undef);
@@ -88,6 +94,21 @@ assert(scon_to_json(false) == "false");
 assert(scon_to_json(33.3) == "33.3");
 assert(scon_to_json([1,2,3]) == "[1,2,3]");
 assert(scon_to_json([["a",1],["b",2]]) == "{\"a\":1,\"b\":2}");
+assert(scon_to_json([]) == "{}");
+assert(scon_to_json([["nested",[["x",1]]]]) == "{\"nested\":{\"x\":1}}");
+assert(scon_to_json([["list",[1,2,3]]]) == "{\"list\":[1,2,3]}");
+
+// scon_make meta-programming: cfg([]) returns full scon data
+assert(made0([]) == [["x",0],["y",0]]);
+// scon_make meta-programming: cfg(undef) returns fallback function
+assert(is_function(made0(undef)));
+
+// large map to exercise divide-and-conquer in _scon_is_map
+large_map = [ for (i=[0:99]) [str("k",i), i] ];
+assert(_scon_is_map(large_map) == true);
+assert(scon_value(large_map, ["k0"]) == 0);
+assert(scon_value(large_map, ["k99"]) == 99);
+assert(scon_value(large_map, ["k100"]) == undef);
 
 echo("scon ok");
 
